@@ -56,12 +56,28 @@ npm test
 ├── tests/
 │   ├── auth.setup.ts         # One-time SAP login → .auth/user.json
 │   ├── e2e/
-│   │   └── example-purchase-order.spec.ts
+│   │   ├── example-purchase-order.spec.ts
+│   │   ├── flp-navigation.spec.ts
+│   │   ├── fiori-elements-list-report.spec.ts
+│   │   ├── ui5-controls-demo.spec.ts
+│   │   └── business-intent.spec.ts
 │   └── seeds/
 │       └── sap-seed.spec.ts  # Entry point for AI agents
 ├── specs/                    # AI-generated test plans (*.plan.md)
 └── package.json
 ```
+
+## Examples included
+
+| File | What it demonstrates |
+|------|----------------------|
+| `example-purchase-order.spec.ts` | `ui5` + `ui5Navigation` + `odata` – navigate, discover button, OData read |
+| `flp-navigation.spec.ts` | Launchpad tiles, semantic object navigation, home, back (`ui5Navigation`, `ui5Shell`) |
+| `fiori-elements-list-report.spec.ts` | Fiori Elements List Report filter/search + Object Page edit/save (`fe` fixture) |
+| `ui5-controls-demo.spec.ts` | Button / Input / Table / Dialog / DatePicker patterns (gold control API usage) |
+| `business-intent.spec.ts` | High-level `intent.procurement` / `intent.finance` business language APIs |
+
+All examples are intentionally conservative (many steps commented) so they compile and illustrate the API without requiring a specific master-data set. Uncomment and adapt IDs / values to your landscape.
 
 ## Writing tests
 
