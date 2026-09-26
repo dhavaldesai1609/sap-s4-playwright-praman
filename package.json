@@ -1,16 +1,25 @@
 {
   "name": "sap-s4-playwright-praman",
-  "version": "1.0.0",
-  "description": "Playwright Praman framework for SAP S/4HANA implementation - full latest functionality: UI5 typed controls, OData V2/V4, Fiori Elements, AI plan-generate-heal agents, multi-auth strategies, compliance reporting",
+  "version": "1.1.0",
+  "description": "Playwright Praman framework for SAP S/4HANA – OTC, PTP, RTR, ATR, HTR process testing with latest Praman features, CI/CD, compliance reporting and multi-env support",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:otc": "playwright test tests/e2e/otc",
+    "test:ptp": "playwright test tests/e2e/ptp",
+    "test:rtr": "playwright test tests/e2e/rtr",
+    "test:atr": "playwright test tests/e2e/atr",
+    "test:htr": "playwright test tests/e2e/htr",
+    "test:high": "playwright test --grep @high",
     "report": "playwright show-report",
+    "report:compliance": "echo 'Open reports/ folder for Praman compliance output'",
     "init": "npx playwright-praman init",
-    "auth:setup": "playwright test --project=setup"
+    "auth:setup": "playwright test --project=setup",
+    "ci": "playwright test --reporter=list"
   },
   "keywords": [
     "playwright",
@@ -21,8 +30,14 @@
     "ui5",
     "odata",
     "e2e",
+    "otc",
+    "ptp",
+    "rtr",
+    "atr",
+    "htr",
     "test-automation",
-    "ai-agents"
+    "ai-agents",
+    "compliance"
   ],
   "author": "Dhaval Desai",
   "license": "MIT",
@@ -31,10 +46,10 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
-    "@types/node": "^22.0.0",
-    "dotenv": "^16.4.0",
-    "playwright-praman": "^1.3.5",
-    "typescript": "^5.6.0"
+    "@playwright/test": "1.57.0",
+    "@types/node": "22.10.0",
+    "dotenv": "16.4.7",
+    "playwright-praman": "1.3.5",
+    "typescript": "5.7.2"
   }
 }
