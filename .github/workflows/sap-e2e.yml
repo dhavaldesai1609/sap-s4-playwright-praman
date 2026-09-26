@@ -1,0 +1,93 @@
+name: SAP S/4HANA E2E Tests (Praman)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      process:
+        description: 'Process area to run (otc|ptp|rtr|atr|htr|all|smoke)'
+        required: false
+        default: 'smoke'
+      environment:
+        description: 'Target environment (dev|qas|preprod)'
+        required: false
+        default: 'qas'
+
+concurrency:
+  group: sap-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: SAP E2E (${{ github.event.inputs.process || 'smoke' }})
+    runs-on: ubuntu-latest   # Prefer self-hosted runner with SAP network access in real projects
+    timeout-minutes: 90
+
+    env:
+      ENV: ${{ github.event.inputs.environment || 'qas' }}
+      CI: true
+      # Secrets must be configured in repo Settings → Secrets
+      SAP_CLOUD_BASE_URL: ${{ secrets.SAP_CLOUD_BASE_URL }}
+      SAP_CLOUD_USERNAME: ${{ secrets.SAP_CLOUD_USERNAME }}
+      SAP_CLOUD_PASSWORD: ${{ secrets.SAP_CLOUD_PASSWORD }}
+      SAP_AUTH_STRATEGY: ${{ secrets.SAP_AUTH_STRATEGY || 'basic' }}
+      SAP_CLIENT: ${{ secrets.SAP_CLIENT || '100' }}
+      SAP_LANGUAGE: EN
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run tests
+        run: |
+          PROCESS="${{ github.event.inputs.process || 'smoke' }}"
+          case "$PROCESS" in
+            otc)   npm run test:otc ;;
+            ptp)   npm run test:ptp ;;
+            rtr)   npm run test:rtr ;;
+            atr)   npm run test:atr ;;
+            htr)   npm run test:htr ;;
+            smoke) npm run test:smoke ;;
+            high)  npm run test:high ;;
+            all)   npm test ;;
+            *)     npm run test:smoke ;;
+          esac
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload Praman compliance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: praman-compliance-reports
+          path: reports/
+          retention-days: 30
+
+      - name: Upload test results & traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
