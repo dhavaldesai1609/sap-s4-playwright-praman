@@ -1,7 +1,7 @@
 {
   "name": "sap-s4-playwright-praman",
-  "version": "1.1.0",
-  "description": "Playwright Praman framework for SAP S/4HANA – OTC, PTP, RTR, ATR, HTR process testing with latest Praman features, CI/CD, compliance reporting and multi-env support",
+  "version": "1.2.0",
+  "description": "Playwright Praman framework for SAP S/4HANA – OTC, PTP, RTR, ATR, HTR with full reporting suite (Compliance, OData Trace, JUnit, JSON, Allure)",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
@@ -16,7 +16,9 @@
     "test:htr": "playwright test tests/e2e/htr",
     "test:high": "playwright test --grep @high",
     "report": "playwright show-report",
-    "report:compliance": "echo 'Open reports/ folder for Praman compliance output'",
+    "report:allure": "allure generate allure-results --clean -o allure-report && allure open allure-report",
+    "report:allure:generate": "allure generate allure-results --clean -o allure-report",
+    "report:compliance": "echo 'Open reports/ folder: compliance-report.json + odata-trace.json'",
     "init": "npx playwright-praman init",
     "auth:setup": "playwright test --project=setup",
     "ci": "playwright test --reporter=list"
@@ -37,7 +39,9 @@
     "htr",
     "test-automation",
     "ai-agents",
-    "compliance"
+    "compliance",
+    "allure",
+    "junit"
   ],
   "author": "Dhaval Desai",
   "license": "MIT",
@@ -48,6 +52,8 @@
   "devDependencies": {
     "@playwright/test": "1.57.0",
     "@types/node": "22.10.0",
+    "allure-commandline": "2.32.0",
+    "allure-playwright": "3.0.6",
     "dotenv": "16.4.7",
     "playwright-praman": "1.3.5",
     "typescript": "5.7.2"
