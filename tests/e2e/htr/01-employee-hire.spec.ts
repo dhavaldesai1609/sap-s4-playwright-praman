@@ -2,12 +2,11 @@ import { test, expect } from 'playwright-praman';
 
 /**
  * HTR – Hire to Retire: Employee Hiring / Onboarding
- *
- * Typical SuccessFactors or S/4 HCM Fiori apps.
- * Adjust semantic objects to your HCM landscape.
  */
 test.describe('HTR | Employee Hire', () => {
-  test('hire new employee (pattern)', async ({
+  test('hire new employee (pattern)', {
+    tag: ['@HTR', '@medium'],
+  }, async ({
     ui5Navigation,
     ui5,
     testData,
@@ -29,12 +28,10 @@ test.describe('HTR | Employee Hire', () => {
 
     await test.step('Navigate to employee management app', async () => {
       // await ui5Navigation.navigateToApp('Employee-manage');
-      // or SuccessFactors tile
     });
 
     await test.step('Create employee record', async () => {
       // Fill personal data, organizational assignment, etc.
-      // await ui5.fill({ id: 'firstName' }, empData.firstName);
     });
   });
 });
