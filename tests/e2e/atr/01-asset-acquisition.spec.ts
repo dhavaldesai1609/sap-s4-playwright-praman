@@ -1,12 +1,13 @@
 import { test, expect } from 'playwright-praman';
+import { MASTER_DATA } from '../../data/master-data';
 
 /**
  * ATR – Acquire to Retire: Asset Acquisition
- *
- * Covers fixed asset creation / acquisition posting.
  */
 test.describe('ATR | Asset Acquisition', () => {
-  test('acquire asset (happy path)', async ({
+  test('acquire asset (happy path)', {
+    tag: ['@ATR', '@medium'],
+  }, async ({
     ui5Navigation,
     ui5,
     intent,
@@ -20,10 +21,10 @@ test.describe('ATR | Asset Acquisition', () => {
     );
 
     const assetData = testData.generate({
-      companyCode: '1000',
-      assetClass: '1000',
+      companyCode: MASTER_DATA.companyCode,
+      assetClass: MASTER_DATA.assetClass,
       description: 'Test Laptop {{timestamp}}',
-      costCenter: '1000',
+      costCenter: MASTER_DATA.costCenter,
       amount: 2500,
     });
 
@@ -32,8 +33,7 @@ test.describe('ATR | Asset Acquisition', () => {
     });
 
     await test.step('Create asset master + acquisition', async () => {
-      // await intent.finance.acquireAsset(assetData);  // if available
-      // or explicit UI5 / FE flow
+      // await intent.finance.acquireAsset(assetData);
     });
   });
 });
