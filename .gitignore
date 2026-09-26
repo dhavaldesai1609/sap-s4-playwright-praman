@@ -20,6 +20,8 @@ pnpm-lock.yaml
 
 # Reports & artifacts
 /reports/
+/allure-results/
+/allure-report/
 /coverage/
 *.log
 logs/
