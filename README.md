@@ -1,37 +1,27 @@
 # SAP S/4HANA Playwright + Praman Test Framework
 
-Production-ready end-to-end test automation framework for **SAP S/4HANA**, **Fiori**, and **UI5** built on [Playwright](https://playwright.dev/) + [Praman](https://praman.dev/).
+Production-ready end-to-end test automation for **SAP S/4HANA**, **Fiori**, and **UI5** — Playwright + [Praman](https://praman.dev/).
 
-Organized around the core S/4HANA process areas:
+| Process | Full Name |
+|---------|-----------|
+| **OTC** | Order-to-Cash |
+| **PTP** | Procure-to-Pay |
+| **RTR** | Record-to-Report |
+| **ATR** | Acquire-to-Retire |
+| **HTR** | Hire-to-Retire |
 
-| Process | Full Name | Typical Scope |
-|---------|-----------|---------------|
-| **OTC** | Order-to-Cash | Sales order → Delivery → Billing → Collections |
-| **PTP** | Procure-to-Pay | PR → PO → Goods Receipt → Invoice → Payment |
-| **RTR** | Record-to-Report | Journal entries, period-end close, reporting |
-| **ATR** | Acquire-to-Retire | Fixed asset acquisition → depreciation → retirement |
-| **HTR** | Hire-to-Retire | Employee hire → org assignment → offboarding |
-
-## Key Features (v1.2)
+## Key Features (v1.3)
 
 | Feature | Description |
 |---------|-------------|
-| **Full reporting suite** | Compliance + OData Trace + JUnit + JSON + Allure |
-| **Process structure** | Dedicated folders + tags for OTC / PTP / RTR / ATR / HTR |
-| **CI/CD** | GitHub Actions with selective process runs & multi-artifact upload |
-| **Tags** | `@OTC`, `@smoke`, `@high` … for selective execution |
-| **Multi-environment** | `ENV=dev\|qas\|preprod` + per-env `.env.*` files |
-| **Strong data layer** | Shared master data + process-specific builders |
-| **Global teardown** | Automatic SM12 lock cleanup after every suite |
-| **199 UI5 control proxies** | Typed, self-healing control APIs |
-| **Intent APIs** | `intent.procurement`, `intent.sales`, `intent.finance` |
-| **AI plan → generate → heal** | Agents produce production-ready tests from business language |
-
-## Prerequisites
-
-- Node.js ≥ 22
-- Access to an S/4HANA (cloud or on-premise) / Fiori Launchpad
-- SAP credentials (store as GitHub Secrets for CI)
+| **Visual regression** | `toHaveScreenshot` + Fiori-stable helpers, `@visual` suite |
+| **Historical trends** | Allure history script + TestOps-ready categories |
+| **ReportPortal** | Optional agent (env-gated) for central flaky/history analytics |
+| **Full report suite** | Compliance, OData Trace, JUnit, JSON, Allure, Playwright HTML |
+| **Process structure** | OTC / PTP / RTR / ATR / HTR folders + tags |
+| **CI/CD** | GitHub Actions, selective process runs |
+| **Multi-environment** | `ENV=dev\|qas\|preprod` |
+| **AI plan → generate → heal** | Praman agents |
 
 ## Quick start
 
@@ -40,91 +30,47 @@ git clone https://github.com/dhavaldesai1609/sap-s4-playwright-praman.git
 cd sap-s4-playwright-praman
 npm install
 npx playwright install chromium
-cp .env.example .env
-# Edit .env with your SAP_CLOUD_* values
-npx playwright-praman init   # installs AI agents (recommended)
+cp .env.example .env   # set SAP_CLOUD_* credentials
+npx playwright-praman init
 npm test
 ```
 
-## Reporting Suite
-
-Every test run produces **five complementary reports**:
-
-| Report | Location | Purpose |
-|--------|----------|---------|
-| **Playwright HTML** | `playwright-report/` | Interactive step-by-step results, screenshots, traces |
-| **Praman Compliance** | `reports/compliance-report.json` | % of steps using Praman abstractions vs raw Playwright |
-| **OData Trace** | `reports/odata-trace.json` | Per-entity-set call counts, durations, error rates |
-| **JUnit XML** | `reports/junit-results.xml` | CI integration (GitHub, Azure DevOps, Jenkins) |
-| **JSON** | `reports/results.json` | Machine-readable full results for custom dashboards |
-| **Allure** | `allure-results/` → `allure-report/` | Beautiful interactive reports with history & trends |
-
-### Viewing the reports
+## Visual regression
 
 ```bash
-# Standard Playwright HTML report
-npm run report
-
-# Allure interactive report (generate + open)
-npm run report:allure
-
-# Just generate Allure (no open)
-npm run report:allure:generate
-
-# Praman compliance + OData trace
-# → open the JSON files in reports/
+npm run test:visual              # run @visual tests
+npm run test:visual:update       # update baselines after intentional UI change
 ```
 
-## Running tests
+Helpers: `tests/helpers/visual.ts` (`expectStableScreenshot`, `expectElementScreenshot`).  
+Baselines live under `__snapshots__/` (commit them). Use the same OS for baseline + CI.
+
+## Reports & historical trends
 
 ```bash
-# Full suite
-npm test
+npm run report                   # Playwright HTML
+npm run report:allure            # Allure with trend history
+```
 
-# Process areas
-npm run test:otc
-npm run test:ptp
-npm run test:rtr
-npm run test:atr
-npm run test:htr
+- **Allure TestOps**: upload `allure-results/` via TestOps uploader / `allurectl`.
+- **ReportPortal** (optional): set `RP_ENDPOINT` + `RP_API_KEY` in `.env` — agent activates automatically.
 
-# Tags
+See [docs/REPORTING-AND-VISUAL.md](docs/REPORTING-AND-VISUAL.md) for the full matrix.
+
+## Process tests
+
+```bash
+npm run test:otc | test:ptp | test:rtr | test:atr | test:htr
 npm run test:smoke
 npm run test:high
-
-# Multi-environment
 ENV=qas npm run test:ptp
 ```
 
-## CI/CD
-
-The workflow uploads:
-- Playwright HTML report
-- Praman reports folder (compliance + OData trace + JUnit + JSON)
-- Allure results
-- Failure traces
-
-Configure these **GitHub Secrets**: `SAP_CLOUD_BASE_URL`, `SAP_CLOUD_USERNAME`, `SAP_CLOUD_PASSWORD`, etc.
-
-## Writing a new scenario
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Useful commands
-
-| Command | Purpose |
-|---------|---------|
-| `npm test` | Full suite |
-| `npm run test:otc` (etc.) | Single process |
-| `npm run test:smoke` | Smoke tests |
-| `npm run report` | Playwright HTML report |
-| `npm run report:allure` | Generate & open Allure report |
-| `npx playwright-praman init` | Scaffold AI agents |
-
 ## Documentation
 
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [tests/e2e/README.md](tests/e2e/README.md)
+- [docs/REPORTING-AND-VISUAL.md](docs/REPORTING-AND-VISUAL.md) – visual + Allure + ReportPortal
+- [CONTRIBUTING.md](CONTRIBUTING.md) – adding scenarios
+- [tests/e2e/README.md](tests/e2e/README.md) – process conventions
 - [Praman Docs](https://praman.dev/docs)
 
 ## License
