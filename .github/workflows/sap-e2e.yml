@@ -29,7 +29,6 @@ jobs:
     env:
       ENV: ${{ github.event.inputs.environment || 'qas' }}
       CI: true
-      # Secrets must be configured in repo Settings → Secrets
       SAP_CLOUD_BASE_URL: ${{ secrets.SAP_CLOUD_BASE_URL }}
       SAP_CLOUD_USERNAME: ${{ secrets.SAP_CLOUD_USERNAME }}
       SAP_CLOUD_PASSWORD: ${{ secrets.SAP_CLOUD_PASSWORD }}
@@ -68,7 +67,7 @@ jobs:
             *)     npm run test:smoke ;;
           esac
 
-      - name: Upload Playwright report
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -76,12 +75,20 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
-      - name: Upload Praman compliance reports
+      - name: Upload Praman reports (compliance + OData trace + JUnit + JSON)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: praman-compliance-reports
+          name: praman-reports
           path: reports/
+          retention-days: 30
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
           retention-days: 30
 
       - name: Upload test results & traces
