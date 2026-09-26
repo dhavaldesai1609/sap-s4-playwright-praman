@@ -1,39 +1,39 @@
 # SAP S/4HANA Playwright + Praman Test Framework
 
-Production-ready end-to-end test automation framework for **SAP S/4HANA**, **Fiori**, and **UI5** applications built on [Playwright](https://playwright.dev/) + the open-source [Praman](https://praman.dev/) plugin.
+Production-ready end-to-end test automation framework for **SAP S/4HANA**, **Fiori**, and **UI5** built on [Playwright](https://playwright.dev/) + [Praman](https://praman.dev/).
 
-Organized around the core **S/4HANA end-to-end process areas**:
+Organized around the core S/4HANA process areas:
 
 | Process | Full Name | Typical Scope |
 |---------|-----------|---------------|
 | **OTC** | Order-to-Cash | Sales order → Delivery → Billing → Collections |
 | **PTP** | Procure-to-Pay | PR → PO → Goods Receipt → Invoice → Payment |
-| **RTR** | Record-to-Report | Journal entries, period-end close, financial reporting |
-| **ATR** | Acquire-to-Retire | Fixed asset acquisition, depreciation, retirement |
-| **HTR** | Hire-to-Retire | Employee hire, org assignment, offboarding |
+| **RTR** | Record-to-Report | Journal entries, period-end close, reporting |
+| **ATR** | Acquire-to-Retire | Fixed asset acquisition → depreciation → retirement |
+| **HTR** | Hire-to-Retire | Employee hire → org assignment → offboarding |
 
-## What’s included (latest Praman capabilities)
+## Key Features (v1.1)
 
-| Capability | Description |
-|---|---|
-| **199 typed UI5 control proxies** | `sap.m`, `sap.ui.table`, `sap.ui.comp`, `sap.uxap`, `sap.f` … – control APIs, not brittle DOM |
-| **UI5 stability synchronization** | Automatic waits for UI5 core settle |
-| **FLP / transaction navigation** | `ui5Navigation.navigateToApp()`, `toTransaction()` |
-| **OData V2 & V4** | Read, create, batch, mock, intercept |
-| **Fiori Elements helpers (`fe`)** | List Report, Object Page, filter bar |
-| **Business Intent APIs (`intent`)** | `intent.procurement`, `intent.sales`, `intent.finance` … |
-| **Test data generation (`testData`)** | Template-based data + automatic cleanup |
-| **Lock management (`flpLocks`)** | SM12 lock handling |
-| **6 auth strategies** | basic, btp-saml, office365, custom |
-| **AI plan → generate → heal** | Agents explore live system and produce production-ready tests |
-| **Process annotations** | Feed Praman compliance / business-aware reporting |
-| **OpenTelemetry** | Optional distributed tracing & metrics |
+| Feature | Description |
+|---------|-------------|
+| **Process structure** | Dedicated folders + tags for OTC / PTP / RTR / ATR / HTR |
+| **CI/CD** | GitHub Actions workflow with selective process runs & artifact upload |
+| **Compliance reporter** | Praman business-aware reports (process readiness, risk heatmaps) |
+| **Tags** | `@OTC`, `@smoke`, `@high` … for selective execution |
+| **Multi-environment** | `ENV=dev\|qas\|preprod` + per-env `.env.*` files |
+| **Strong data layer** | Shared master data + process-specific builders |
+| **Global teardown** | Automatic SM12 lock cleanup after every suite |
+| **199 UI5 control proxies** | Typed, self-healing control APIs |
+| **Intent APIs** | `intent.procurement`, `intent.sales`, `intent.finance` |
+| **Fiori Elements helpers** | `fe.listReport`, `fe.objectPage` |
+| **AI plan → generate → heal** | Agents produce production-ready tests from business language |
+| **Pinned dependencies** | Stable versions of Playwright + Praman |
 
 ## Prerequisites
 
-- **Node.js ≥ 22**
-- Access to an SAP S/4HANA (cloud or on-premise) / Fiori Launchpad
-- SAP credentials
+- Node.js ≥ 22
+- Access to an S/4HANA (cloud or on-premise) / Fiori Launchpad
+- SAP credentials (store as GitHub Secrets for CI)
 
 ## Quick start
 
@@ -43,65 +43,89 @@ cd sap-s4-playwright-praman
 npm install
 npx playwright install chromium
 cp .env.example .env
-# → set SAP_CLOUD_BASE_URL, SAP_CLOUD_USERNAME, SAP_CLOUD_PASSWORD, SAP_AUTH_STRATEGY
-npx playwright-praman init   # recommended – installs AI agents
+# Edit .env with your SAP_CLOUD_* values
+npx playwright-praman init   # installs AI agents (recommended)
 npm test
 ```
 
 ## Project structure
 
 ```
-├── playwright.config.ts
+├── .github/workflows/sap-e2e.yml   # CI pipeline
+├── playwright.config.ts            # compliance reporter + multi-env
 ├── praman.config.ts
 ├── .env.example
+├── CONTRIBUTING.md
 ├── tests/
 │   ├── auth.setup.ts
-│   ├── data/
-│   │   └── master-data.ts          # shared org / BP / material templates
-│   ├── seeds/
-│   │   └── sap-seed.spec.ts
+│   ├── global.teardown.ts          # SM12 lock cleanup
+│   ├── data/master-data.ts         # shared + process builders
+│   ├── seeds/sap-seed.spec.ts
 │   └── e2e/
-│       ├── README.md               # process-area guide
-│       ├── otc/                    # Order-to-Cash
-│       │   └── 01-sales-order.spec.ts
-│       ├── ptp/                    # Procure-to-Pay
-│       │   └── 02-purchase-order.spec.ts
-│       ├── rtr/                    # Record-to-Report
-│       │   └── 01-journal-entry.spec.ts
-│       ├── atr/                    # Acquire-to-Retire
-│       │   └── 01-asset-acquisition.spec.ts
-│       ├── htr/                    # Hire-to-Retire
-│       │   └── 01-employee-hire.spec.ts
-│       ├── flp-navigation.spec.ts  # common FLP patterns
-│       ├── fiori-elements-list-report.spec.ts
-│       ├── ui5-controls-demo.spec.ts
-│       └── business-intent.spec.ts
+│       ├── README.md
+│       ├── otc/  ptp/  rtr/  atr/  htr/
+│       └── _demos/                 # pattern examples (reference)
 └── package.json
 ```
 
-## Running process suites
+## Running tests
 
 ```bash
-# Single process area
-npx playwright test tests/e2e/otc
-npx playwright test tests/e2e/ptp --headed
-
-# All process tests
+# Full suite
 npm test
 
-# Specific file
-npx playwright test tests/e2e/ptp/02-purchase-order.spec.ts
+# Process areas
+npm run test:otc
+npm run test:ptp
+npm run test:rtr
+npm run test:atr
+npm run test:htr
+
+# Tags
+npm run test:smoke          # @smoke
+npm run test:high           # @high criticality
+
+# Multi-environment
+ENV=qas npm run test:ptp
+ENV=preprod npm test
+
+# Headed / debug
+npm run test:headed
+npm run test:debug
 ```
 
-## Writing a new process test
+## CI/CD
+
+The workflow `.github/workflows/sap-e2e.yml` supports:
+
+- Push / PR triggers
+- Manual dispatch with process (`otc|ptp|rtr|atr|htr|smoke|all`) and environment selection
+- Upload of Playwright HTML report, Praman compliance reports, and failure traces
+
+Configure these **GitHub Secrets**:
+
+- `SAP_CLOUD_BASE_URL`
+- `SAP_CLOUD_USERNAME`
+- `SAP_CLOUD_PASSWORD`
+- `SAP_AUTH_STRATEGY` (optional)
+- `SAP_CLIENT` (optional)
+
+> For real landscapes prefer a **self-hosted runner** that can reach the SAP system (VPN / Cloud Connector).
+
+## Writing a new scenario
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+
+Minimal template:
 
 ```ts
 import { test, expect } from 'playwright-praman';
-import { MASTER_DATA } from '../../data/master-data';
+import { buildSalesOrderData } from '../../data/master-data';
 
 test.describe('OTC | Sales Order', () => {
-  test('create sales order', async ({ ui5Navigation, intent, testData, fe }) => {
-    // Always annotate for compliance reporting
+  test('create sales order', {
+    tag: ['@OTC', '@smoke', '@high'],
+  }, async ({ ui5Navigation, intent, testData }) => {
     test.info().annotations.push(
       { type: 'process', description: 'OTC' },
       { type: 'subprocess', description: 'Sales Order Creation' },
@@ -109,45 +133,42 @@ test.describe('OTC | Sales Order', () => {
       { type: 'tcode', description: 'VA01 / SalesOrder-manage' },
     );
 
-    const data = testData.generate({ ...MASTER_DATA, quantity: 5 });
-
+    const data = testData.generate(buildSalesOrderData());
     await ui5Navigation.navigateToApp('SalesOrder-manage');
-    // Prefer: await intent.sales.createSalesOrder(data);
-    // Fallback: fe.listReport + ui5.control proxies
+    // await intent.sales.createSalesOrder(data);
   });
 });
 ```
 
-**Recommended order of APIs**
+**API preference order**
 1. `intent.*` (business language)
 2. `fe.*` (Fiori Elements)
-3. Explicit `ui5.control` / `ui5.fill` / `ui5.table` (full control)
+3. Explicit `ui5.control` / `ui5.fill` / `ui5.table`
 
-## AI-powered test generation
+## AI-powered generation
 
 ```
 /praman-sap-coverage
-# or describe any OTC / PTP / RTR process in natural language
 ```
 
-Planner → Generator → Healer pipeline produces typed, self-healing tests against your live system.
+Describe any OTC / PTP / RTR process. The Planner → Generator → Healer pipeline produces typed, self-healing tests against your live system.
 
 ## Useful commands
 
 | Command | Purpose |
 |---------|---------|
-| `npm test` | Run full suite |
-| `npm run test:headed` | Headed browser |
-| `npm run test:ui` | Playwright UI mode |
-| `npm run test:debug` | Step-through debug |
-| `npx playwright-praman init` | Scaffold AI agents + gold-standard extras |
+| `npm test` | Full suite |
+| `npm run test:otc` (etc.) | Single process |
+| `npm run test:smoke` | Smoke tests |
+| `npm run test:high` | High-criticality tests |
+| `npm run report` | Open HTML report |
+| `npx playwright-praman init` | Scaffold AI agents |
 
-## Configuration reference
+## Documentation
 
-- [Praman Configuration](https://praman.dev/docs/guides/configuration)
-- [Authentication Guide](https://praman.dev/docs/guides/authentication)
-- [Fixture Reference](https://praman.dev/docs/guides/fixtures)
-- [Getting Started](https://praman.dev/docs/guides/getting-started)
+- [CONTRIBUTING.md](CONTRIBUTING.md) – how to add scenarios
+- [tests/e2e/README.md](tests/e2e/README.md) – process conventions & tags
+- [Praman Docs](https://praman.dev/docs) – fixtures, auth, configuration
 
 ## License
 
@@ -155,4 +176,4 @@ MIT
 
 ---
 
-Built for SAP S/4HANA implementation programs that need reliable, maintainable, AI-augmented test automation across OTC, PTP, RTR, ATR and HTR.
+Built for SAP S/4HANA implementation programs that need reliable, maintainable, AI-augmented test automation with clear process ownership and compliance-ready evidence.
