@@ -1,20 +1,26 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import path from 'path';
 
-// Load environment variables
-dotenv.config();
+// Multi-environment support: load .env.<ENV> if present, otherwise .env
+const envName = process.env.ENV || process.env.NODE_ENV || 'dev';
+dotenv.config({ path: path.resolve(process.cwd(), `.env.${envName}`) });
+dotenv.config(); // fallback to .env
 
 /**
- * Playwright + Praman configuration optimized for SAP S/4HANA / Fiori testing.
- * Includes auth setup project, compliance reporter, and sensible timeouts for UI5.
+ * Playwright + Praman configuration for SAP S/4HANA process testing.
+ * - Auth setup + global teardown (lock cleanup)
+ * - Praman compliance reporter
+ * - Multi-environment via ENV=dev|qas|preprod
+ * - Sensible timeouts for UI5 / Fiori
  */
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: false, // SAP sessions often share state; enable carefully
+  fullyParallel: false, // SAP sessions / locks – keep sequential by default
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 2 : 1, // Keep low for SAP to avoid lock contention
-  timeout: 120_000, // UI5 apps can be slow
+  workers: process.env.CI ? 2 : 1,
+  timeout: 120_000,
   expect: {
     timeout: 15_000,
   },
@@ -22,8 +28,8 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    // Praman compliance / business-aware reporter (when available)
-    // ['playwright-praman/reporters', { type: 'compliance', outputDir: 'reports' }],
+    // Praman business-aware / compliance reporter
+    ['playwright-praman/reporters', { type: 'compliance', outputDir: 'reports' }],
   ],
 
   use: {
@@ -33,12 +39,9 @@ export default defineConfig({
     video: 'retain-on-failure',
     actionTimeout: 30_000,
     navigationTimeout: 60_000,
-    // Extra HTTP headers if needed for your landscape
-    // extraHTTPHeaders: { ... },
   },
 
   projects: [
-    // Auth setup – runs once, saves storage state
     {
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
@@ -48,7 +51,6 @@ export default defineConfig({
       name: 'teardown',
       testMatch: /global\.teardown\.ts/,
     },
-    // Main Chromium project – depends on setup
     {
       name: 'chromium',
       use: {
